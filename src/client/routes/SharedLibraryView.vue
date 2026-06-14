@@ -93,7 +93,9 @@ const isSearchTab = computed(() => mainTab.value === "search")
 const browseOrSearchResults = computed(
   () => (isSearchTab.value ? searchResults.data.value : browseResults.data.value) ?? [],
 )
-const isResultsLoading = computed(() => (isSearchTab.value ? searchResults.isLoading.value : browseResults.isLoading.value))
+const isResultsLoading = computed(() =>
+  isSearchTab.value ? searchResults.isLoading.value : browseResults.isLoading.value,
+)
 const isResultsFetching = computed(() =>
   isSearchTab.value ? searchResults.isFetching.value : browseResults.isFetching.value,
 )
@@ -234,7 +236,9 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
           :key="f"
           @click="filter = f"
           :class="`px-2 py-1 rounded-md text-[12px] cursor-pointer transition-all ${
-            filter === f ? 'bg-white/10 text-text font-medium' : 'bg-transparent text-muted hover:bg-hover hover:text-text'
+            filter === f
+              ? 'bg-white/10 text-text font-medium'
+              : 'bg-transparent text-muted hover:bg-hover hover:text-text'
           }`"
         >
           {{ f === "all" ? "All" : STATUS_LABELS[f] }}
@@ -347,13 +351,19 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
       </template>
       <template v-else>
         <div v-if="isResultsLoading" class="text-center py-10 text-muted">
-          <div class="text-4xl text-accent opacity-30 mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
+          <div
+            class="text-4xl text-accent opacity-30 mb-3"
+            :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
+          >
             &#9829;
           </div>
           <p class="text-sm">Loading...</p>
         </div>
         <div v-else class="text-center py-10 text-muted">
-          <div class="text-4xl text-accent opacity-30 mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
+          <div
+            class="text-4xl text-accent opacity-30 mb-3"
+            :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
+          >
             &#9829;
           </div>
           <p class="text-sm">

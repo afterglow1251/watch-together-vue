@@ -203,7 +203,9 @@ async function handleEpisodeSelect(ep: Episode) {
     const needsBackendPos = !localPos && userId() && sourceUrl()
     const [streamResp, posResp] = await Promise.all([
       api.stream({ url: ep.url }),
-      needsBackendPos ? api.getPlaybackPosition(userId()!, sourceUrl()!, ep.id).catch(() => null) : Promise.resolve(null),
+      needsBackendPos
+        ? api.getPlaybackPosition(userId()!, sourceUrl()!, ep.id).catch(() => null)
+        : Promise.resolve(null),
     ])
     if (!localPos && posResp?.position) {
       initialSeek.value = posResp.position.position

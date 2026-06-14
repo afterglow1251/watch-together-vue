@@ -249,7 +249,9 @@ async function handleRemove(friendshipId: number, username: string) {
             class="flex items-center justify-between px-4 py-3 bg-card border border-border rounded-lg cursor-pointer hover:border-accent/30 hover:shadow-[0_2px_12px_rgba(232,67,147,0.08)] transition-all text-left w-full"
           >
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center text-accent text-sm font-bold">
+              <div
+                class="w-9 h-9 rounded-full bg-accent/15 flex items-center justify-center text-accent text-sm font-bold"
+              >
                 {{ friend.username[0].toUpperCase() }}
               </div>
               <span class="text-sm font-medium text-text">{{ friend.username }}</span>
@@ -269,7 +271,10 @@ async function handleRemove(friendshipId: number, username: string) {
           "
           class="text-center py-10 text-muted"
         >
-          <div class="text-4xl text-accent opacity-30 mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
+          <div
+            class="text-4xl text-accent opacity-30 mb-3"
+            :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
+          >
             &#9829;
           </div>
           <p class="text-sm">No loved ones yet. Search and add someone above!</p>

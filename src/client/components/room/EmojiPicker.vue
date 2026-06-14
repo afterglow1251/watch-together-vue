@@ -344,8 +344,16 @@ const tabItems = computed(() => {
           borderColor: 'var(--color-border, #2a2a3a)',
           color: 'var(--color-text, #e4e4ed)',
         }"
-        @focus="(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--color-accent, #e84393)' }"
-        @blur="(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--color-border, #2a2a3a)' }"
+        @focus="
+          (e) => {
+            ;(e.currentTarget as HTMLInputElement).style.borderColor = 'var(--color-accent, #e84393)'
+          }
+        "
+        @blur="
+          (e) => {
+            ;(e.currentTarget as HTMLInputElement).style.borderColor = 'var(--color-border, #2a2a3a)'
+          }
+        "
       />
     </div>
 
@@ -371,19 +379,23 @@ const tabItems = computed(() => {
       class="flex-1 overflow-y-auto px-1.5 pb-1.5"
       style="scrollbar-width: thin; scrollbar-color: var(--color-border) transparent"
     >
-      <div
-        v-if="currentEmojis.length > 0"
-        class="grid gap-0.5"
-        style="grid-template-columns: repeat(7, 1fr)"
-      >
+      <div v-if="currentEmojis.length > 0" class="grid gap-0.5" style="grid-template-columns: repeat(7, 1fr)">
         <button
           v-for="emoji in currentEmojis"
           :key="emoji"
           @click="handleSelect(emoji)"
           class="w-full aspect-square flex items-center justify-center text-lg rounded-md cursor-pointer border-none transition-transform hover:scale-125"
           :style="{ background: 'transparent', lineHeight: '1' }"
-          @mouseenter="(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--color-hover, #1a1a24)' }"
-          @mouseleave="(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent' }"
+          @mouseenter="
+            (e) => {
+              ;(e.currentTarget as HTMLElement).style.background = 'var(--color-hover, #1a1a24)'
+            }
+          "
+          @mouseleave="
+            (e) => {
+              ;(e.currentTarget as HTMLElement).style.background = 'transparent'
+            }
+          "
         >
           {{ emoji }}
         </button>

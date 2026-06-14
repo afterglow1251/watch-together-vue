@@ -19,7 +19,9 @@ watch(() => props.stream, attach)
 </script>
 
 <template>
-  <div class="relative h-full w-full overflow-hidden rounded-[22px] bg-black/10 shadow-[0_12px_30px_rgba(12,7,16,0.24)]">
+  <div
+    class="relative h-full w-full overflow-hidden rounded-[22px] bg-black/10 shadow-[0_12px_30px_rgba(12,7,16,0.24)]"
+  >
     <video
       ref="videoEl"
       autoplay

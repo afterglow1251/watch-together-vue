@@ -14,9 +14,7 @@ const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
   <nav class="h-[52px] flex items-center px-5 relative z-10 shrink-0">
     <span class="text-sm font-bold text-gradient mr-6 select-none">
       Watch&nbsp;
-      <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">
-        ♥
-      </span>
+      <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }"> ♥ </span>
       &nbsp;Together
     </span>
 

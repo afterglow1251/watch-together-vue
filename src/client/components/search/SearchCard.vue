@@ -25,7 +25,7 @@ const props = defineProps<{
 }>()
 
 const poster = computed(() =>
-  props.item.poster ? `/api/poster-proxy?url=${encodeURIComponent(props.item.poster)}` : ""
+  props.item.poster ? `/api/poster-proxy?url=${encodeURIComponent(props.item.poster)}` : "",
 )
 </script>
 
@@ -63,19 +63,8 @@ const poster = computed(() =>
     >
       <Bookmark :size="14" :fill="props.inLibrary ? 'currentColor' : 'none'" />
     </button>
-    <img
-      v-if="poster"
-      :src="poster"
-      alt=""
-      loading="lazy"
-      class="w-full aspect-[2/3] object-cover block bg-hover"
-    />
-    <div
-      v-else
-      class="w-full aspect-[2/3] bg-hover flex items-center justify-center text-muted text-2xl"
-    >
-      ?
-    </div>
+    <img v-if="poster" :src="poster" alt="" loading="lazy" class="w-full aspect-[2/3] object-cover block bg-hover" />
+    <div v-else class="w-full aspect-[2/3] bg-hover flex items-center justify-center text-muted text-2xl">?</div>
     <div class="p-2.5">
       <div class="text-xs font-semibold text-text leading-tight mb-1 line-clamp-2">{{ props.item.title }}</div>
       <div v-if="props.item.year" class="text-[11px] text-muted">{{ props.item.year }}</div>

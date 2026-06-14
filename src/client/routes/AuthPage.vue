@@ -43,9 +43,8 @@ async function handleSubmit(e: Event) {
     <Card>
       <h1 class="text-[28px] font-bold mb-1.5 text-gradient">
         Watch{{ " " }}
-        <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">
-          &#9829;
-        </span>{{ " " }}
+        <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }"> &#9829; </span
+        >{{ " " }}
         Together
       </h1>
       <p class="text-muted text-sm mb-8">Sign in to your movie night</p>

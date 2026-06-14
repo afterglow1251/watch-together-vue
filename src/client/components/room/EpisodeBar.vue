@@ -86,16 +86,30 @@ function go(delta: number) {
       </button>
 
       <button
-        @click="(e) => { props.onOpenList(); (e.currentTarget as HTMLButtonElement).blur() }"
+        @click="
+          (e) => {
+            props.onOpenList()
+            ;(e.currentTarget as HTMLButtonElement).blur()
+          }
+        "
         class="flex-1 min-w-0 flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-hover hover:bg-input border border-transparent hover:border-border text-[12px] cursor-pointer transition-colors"
         title="All episodes"
       >
         <span class="shrink-0 text-muted font-normal">
           <span v-if="currentIndex >= 0" class="text-accent font-semibold">{{ currentIndex + 1 }}</span>
-          <span v-else class="text-[10px] opacity-60">–</span><span class="mx-1 opacity-50">/</span>{{ props.episodes.length }}
+          <span v-else class="text-[10px] opacity-60">–</span><span class="mx-1 opacity-50">/</span
+          >{{ props.episodes.length }}
         </span>
         <span class="flex-1 min-w-0 truncate text-text">{{ props.currentEpisode?.name ?? "Pick an episode" }}</span>
-        <svg class="shrink-0 text-muted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          class="shrink-0 text-muted"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>

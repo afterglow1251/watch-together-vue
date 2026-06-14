@@ -18,9 +18,7 @@ function errorMessage(value: unknown): string {
     : "Something went wrong"
 }
 
-async function call<T>(
-  req: Promise<{ data: T | null; error: { value: unknown } | null }>,
-): Promise<T> {
+async function call<T>(req: Promise<{ data: T | null; error: { value: unknown } | null }>): Promise<T> {
   const { data, error } = await req
   if (error) throw new Error(errorMessage(error.value))
   return data as T
@@ -62,7 +60,8 @@ export const api = {
   removeFromSharedLibrary: (data: Params<(typeof r)["shared-library"]["delete"]>) =>
     call(r["shared-library"].delete(data)),
 
-  savePlaybackPosition: (data: Params<(typeof r)["playback-position"]["post"]>) => call(r["playback-position"].post(data)),
+  savePlaybackPosition: (data: Params<(typeof r)["playback-position"]["post"]>) =>
+    call(r["playback-position"].post(data)),
   getPlaybackPositions: (userId: number) => call(r["playback-position"].get({ query: { userId } })),
   getPlaybackPosition: (userId: number, sourceUrl: string, episodeId?: string) =>
     call(r["playback-position"].single.get({ query: { userId, sourceUrl, episodeId } })),

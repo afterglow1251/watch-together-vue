@@ -36,10 +36,7 @@ function shareLink() {
 <template>
   <div class="px-4 py-3 border-b border-border relative z-20">
     <div class="flex items-center justify-between mb-2">
-      <a
-        href="/"
-        class="text-sm font-bold text-gradient hover:opacity-80 transition-opacity select-none"
-      >
+      <a href="/" class="text-sm font-bold text-gradient hover:opacity-80 transition-opacity select-none">
         Watch&nbsp;
         <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">♥</span>
         &nbsp;Together
@@ -51,10 +48,7 @@ function shareLink() {
         class="group inline-flex items-center gap-1.5 bg-transparent border-none cursor-pointer p-0 hover:opacity-70 transition-opacity"
         title="Click to copy invite link"
       >
-        <span
-          class="text-base font-bold font-mono tracking-widest"
-          :style="{ color: 'var(--color-accent)' }"
-        >
+        <span class="text-base font-bold font-mono tracking-widest" :style="{ color: 'var(--color-accent)' }">
           {{ props.code }}
         </span>
         <Link2 :size="12" class="text-muted" />

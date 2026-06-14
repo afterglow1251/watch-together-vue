@@ -30,7 +30,9 @@ function handleCreate() {
         class="relative w-52 h-52 mb-2 cursor-pointer transition-transform duration-200 ease-out hover:scale-105 active:scale-[0.98]"
       >
         <!-- Ambient glow -->
-        <div class="absolute inset-4 rounded-full blur-[80px] bg-accent opacity-15 animate-[heart-pulse_4s_ease-in-out_infinite]" />
+        <div
+          class="absolute inset-4 rounded-full blur-[80px] bg-accent opacity-15 animate-[heart-pulse_4s_ease-in-out_infinite]"
+        />
 
         <svg width="208" height="208" viewBox="0 0 208 208" fill="none" class="absolute inset-0">
           <!-- Outer orbit — slow -->

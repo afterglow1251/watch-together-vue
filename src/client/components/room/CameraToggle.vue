@@ -17,9 +17,9 @@ const menuOpen = ref(false)
 
     <div
       class="absolute bottom-12 left-0 mb-2 flex flex-col gap-1 transition-all duration-150"
-      :class="menuOpen
-        ? 'opacity-100 translate-y-0 pointer-events-auto'
-        : 'opacity-0 translate-y-2 pointer-events-none'"
+      :class="
+        menuOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-2 pointer-events-none'
+      "
     >
       <button
         v-if="webcam.localStream"
