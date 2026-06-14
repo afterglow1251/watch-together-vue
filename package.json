@@ -1,0 +1,64 @@
+{
+  "name": "watch-together-vue",
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,magenta \"bun run dev:server\" \"bun run dev:client\"",
+    "dev:server": "bun run --watch src/server/index.ts",
+    "dev:client": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "start": "NODE_ENV=production bun run src/server/index.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "@elysiajs/eden": "^1.4.9",
+    "@tanstack/vue-query": "^5.0.0",
+    "drizzle-orm": "^0.45.1",
+    "elysia": "^1.2.12",
+    "emoji-picker-element": "1.12.1",
+    "hls.js": "^1.5.0",
+    "interactjs": "^1.10.27",
+    "lucide-vue-next": "^0.564.0",
+    "micromark": "^4.0.2",
+    "micromark-extension-gfm": "^3.0.0",
+    "pinia": "^2.2.0",
+    "plyr": "^3.7.8",
+    "postgres": "^3.4.8",
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0",
+    "vue-sonner": "^1.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/vue": "^8.1.0",
+    "@types/bun": "^1.3.9",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vue/test-utils": "^2.4.6",
+    "concurrently": "^9.0.0",
+    "drizzle-kit": "^0.31.9",
+    "husky": "^9.1.7",
+    "jsdom": "^28.1.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "sass": "^1.101.0",
+    "tailwindcss": "^4.0.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.0.18",
+    "vue-tsc": "^2.1.10"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,vue,json,css,html}": "prettier --write"
+  },
+  "patchedDependencies": {
+    "emoji-picker-element@1.12.1": "patches/emoji-picker-element@1.12.1.patch"
+  }
+}

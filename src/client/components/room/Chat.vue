@@ -1,0 +1,439 @@
+<script setup lang="ts">
+import { ref, watch, nextTick } from "vue"
+import type { ChatMsg } from "../../stores/room"
+import EmojiPicker from "./EmojiPicker.vue"
+
+const props = defineProps<{
+  messages: ChatMsg[]
+  typingUser: string | null
+  replyingTo: ChatMsg | null
+  onSend: (text: string) => void
+  onEdit: (msgId: number, text: string) => void
+  onTyping: () => void
+  onReply: (msg: ChatMsg) => void
+  onCancelReply: () => void
+  onReaction: (msgId: number, emoji: string) => void
+}>()
+
+const messagesEl = ref<HTMLDivElement>()
+const inputEl = ref<HTMLTextAreaElement>()
+
+// Expose window for in-template viewport clamping (template scope has no globals)
+const win = window
+
+// Hovered message id for action bar
+const hoveredMsgId = ref<number | null>(null)
+
+// Emoji picker state: which message + position
+const emojiTarget = ref<{
+  msgId: number
+  top: number
+  left: number
+} | null>(null)
+
+// Editing state
+const editingMsgId = ref<number | null>(null)
+const editText = ref("")
+
+function scrollToBottom() {
+  if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
+}
+
+// Auto-scroll on new messages
+watch(
+  () => props.messages.length,
+  () => {
+    nextTick(scrollToBottom)
+  },
+)
+
+// Auto-scroll when reactions change on last message
+watch(
+  () => {
+    const msgs = props.messages
+    if (msgs.length === 0) return ""
+    const last = msgs[msgs.length - 1]
+    // Track reactions array to trigger on changes
+    return last.reactions.length + ":" + last.reactions.map((r) => r.count).join(",")
+  },
+  () => {
+    nextTick(scrollToBottom)
+  },
+)
+
+// Auto-scroll when typing indicator appears
+watch(
+  () => props.typingUser,
+  (v) => {
+    if (v) nextTick(scrollToBottom)
+  },
+)
+
+function isHovered(msg: ChatMsg) {
+  return hoveredMsgId.value === msg.msgId && msg.msgId != null
+}
+function isEmojiOpen(msg: ChatMsg) {
+  return emojiTarget.value?.msgId === msg.msgId
+}
+function isEditing(msg: ChatMsg) {
+  return editingMsgId.value === msg.msgId
+}
+
+// Close emoji picker on scroll
+function onScroll() {
+  if (emojiTarget.value) {
+    emojiTarget.value = null
+    hoveredMsgId.value = null
+  }
+}
+
+function autoResizeTextarea(el: HTMLTextAreaElement) {
+  el.style.overflow = "hidden"
+  el.style.height = "auto"
+  const h = Math.min(el.scrollHeight, 120)
+  el.style.height = h + "px"
+  if (el.scrollHeight > 120) el.style.overflow = "auto"
+}
+
+function handleSend() {
+  if (!inputEl.value) return
+  const text = inputEl.value.value.trim()
+  if (!text) return
+  props.onSend(text)
+  inputEl.value.value = ""
+  inputEl.value.style.height = "auto"
+}
+
+function startEdit(msg: ChatMsg) {
+  editingMsgId.value = msg.msgId
+  editText.value = msg.text
+  hoveredMsgId.value = null
+}
+
+function cancelEdit() {
+  editingMsgId.value = null
+  editText.value = ""
+}
+
+function saveEdit() {
+  const msgId = editingMsgId.value
+  const text = editText.value.trim()
+  if (msgId == null || !text) return
+  props.onEdit(msgId, text)
+  cancelEdit()
+}
+
+function scrollToMessage(msgId: number) {
+  const el = messagesEl.value?.querySelector(`[data-msg-id="${msgId}"]`) as HTMLElement | null
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "center" })
+    el.style.outline = "2px solid var(--color-accent)"
+    el.style.outlineOffset = "2px"
+    setTimeout(() => {
+      el.style.outline = ""
+      el.style.outlineOffset = ""
+    }, 1500)
+  }
+}
+
+function openEmojiPicker(msgId: number, buttonEl: HTMLElement) {
+  const rect = buttonEl.getBoundingClientRect()
+  // Position picker below the button, shift left if needed
+  const top = rect.bottom + 4
+  const left = Math.max(8, rect.left - 140)
+  emojiTarget.value = { msgId, top, left }
+}
+
+function handleEmojiSelect(emoji: string) {
+  const target = emojiTarget.value
+  if (!target) return
+  props.onReaction(target.msgId, emoji)
+  emojiTarget.value = null
+  hoveredMsgId.value = null
+}
+
+function focusEditInput(el: Element | null) {
+  if (el) setTimeout(() => (el as HTMLInputElement).focus(), 0)
+}
+</script>
+
+<template>
+  <div class="flex-1 flex flex-col min-h-[160px] px-5 py-4 pb-3 relative z-1">
+    <label class="block text-xs font-semibold text-muted uppercase tracking-wide mb-2">
+      Chat <span :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">{{ "♥" }}</span>
+    </label>
+
+    <div
+      ref="messagesEl"
+      class="flex-1 overflow-y-auto flex flex-col gap-2 mb-2.5 min-h-[60px] pt-5 pb-4"
+      @scroll="onScroll"
+    >
+      <div
+        v-for="msg in props.messages"
+        :key="msg.id"
+        :class="`relative ${msg.isMe ? 'self-end' : 'self-start'}`"
+        :style="{ 'max-width': '90%' }"
+        :data-msg-id="msg.msgId"
+        @mouseenter="msg.msgId != null && (hoveredMsgId = msg.msgId)"
+        @mouseleave="
+          () => {
+            if (!isEmojiOpen(msg)) hoveredMsgId = null
+          }
+        "
+      >
+        <!-- Discord-style action bar — sits on top edge of message -->
+        <div
+          v-if="(isHovered(msg) || isEmojiOpen(msg)) && !isEditing(msg)"
+          :class="`absolute -top-3.5 z-10 flex bg-card border border-border rounded-md shadow-md ${
+            msg.isMe ? 'right-1' : 'left-1'
+          }`"
+          :style="{ animation: 'msg-in 0.1s ease-out' }"
+        >
+          <button
+            @click="
+              () => {
+                props.onReply(msg)
+                hoveredMsgId = null
+              }
+            "
+            class="w-7 h-6 flex items-center justify-center text-muted hover:text-accent hover:bg-hover cursor-pointer border-none bg-transparent text-xs rounded-l-md transition-colors"
+            title="Reply"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 17 4 12 9 7" />
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+          <button
+            v-if="msg.isMe"
+            @click="startEdit(msg)"
+            class="w-7 h-6 flex items-center justify-center text-muted hover:text-accent hover:bg-hover cursor-pointer border-none bg-transparent text-xs transition-colors"
+            title="Edit"
+          >
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              <path d="m15 5 4 4" />
+            </svg>
+          </button>
+          <button
+            @click="
+              (e) => {
+                if (isEmojiOpen(msg)) {
+                  emojiTarget = null
+                } else {
+                  openEmojiPicker(msg.msgId, e.currentTarget as HTMLElement)
+                }
+              }
+            "
+            :class="`w-7 h-6 flex items-center justify-center hover:bg-hover cursor-pointer border-none bg-transparent text-xs rounded-r-md transition-colors ${
+              isEmojiOpen(msg) ? 'text-accent' : 'text-muted hover:text-accent'
+            }`"
+            title="Add Reaction"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+              <line x1="9" y1="9" x2="9.01" y2="9" />
+              <line x1="15" y1="9" x2="15.01" y2="9" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Message bubble -->
+        <div
+          :class="`px-2.5 py-1.5 rounded-xl text-[13px] leading-relaxed ${
+            msg.isMe ? 'bg-accent text-white rounded-br-sm' : 'bg-hover text-text rounded-bl-sm'
+          }`"
+          :style="{ animation: 'msg-in 0.25s ease-out', 'overflow-wrap': 'anywhere' }"
+        >
+          <!-- Reply reference -->
+          <div
+            v-if="msg.replyTo"
+            :class="`text-[11px] mb-1 px-2 py-0.5 rounded border-l-2 cursor-pointer transition-opacity hover:opacity-100 ${
+              msg.isMe
+                ? 'bg-white/15 border-white/40 text-white/80 opacity-80'
+                : 'bg-black/5 border-accent/40 text-muted opacity-80'
+            }`"
+            @click="scrollToMessage(msg.replyTo!.msgId)"
+          >
+            <span class="font-semibold">{{ msg.replyTo.name }}</span>
+            <span class="block truncate">{{ msg.replyTo.text }}</span>
+          </div>
+
+          <span v-if="!msg.isMe" class="text-[11px] font-semibold opacity-70 block mb-0.5">{{ msg.name }}</span>
+
+          <input
+            v-if="isEditing(msg)"
+            type="text"
+            :value="editText"
+            :maxlength="2000"
+            :class="`w-full px-1.5 py-0.5 rounded text-[13px] outline-none border ${
+              msg.isMe
+                ? 'bg-white/20 border-white/30 text-white placeholder:text-white/50'
+                : 'bg-white border-border text-text'
+            }`"
+            @input="(e) => (editText = (e.currentTarget as HTMLInputElement).value)"
+            @keydown="
+              (e) => {
+                if (e.key === 'Enter') saveEdit()
+                if (e.key === 'Escape') cancelEdit()
+              }
+            "
+            :ref="(el) => focusEditInput(el as Element | null)"
+          />
+          <span v-else :style="{ 'white-space': 'pre-wrap' }">{{ msg.text }}</span>
+
+          <span :class="`text-[9px] block text-right mt-0.5 ${msg.isMe ? 'opacity-60' : 'opacity-40'}`">
+            <span v-if="msg.edited" class="mr-1">(edited)</span>
+            {{ new Date(msg.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }}
+          </span>
+        </div>
+
+        <!-- Reactions row -->
+        <div
+          v-if="msg.reactions.length > 0"
+          :class="`flex flex-wrap gap-1 mt-0.5 ${msg.isMe ? 'justify-end' : 'justify-start'}`"
+        >
+          <button
+            v-for="(reaction, ri) in msg.reactions"
+            :key="ri"
+            @click="props.onReaction(msg.msgId, reaction.emoji)"
+            :class="`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border cursor-pointer transition-all ${
+              reaction.reacted
+                ? 'bg-accent/15 border-accent/40 text-accent'
+                : 'bg-hover border-border text-muted hover:border-accent/30'
+            }`"
+            :style="{ animation: 'reaction-pop 0.2s ease-out' }"
+          >
+            <span>{{ reaction.emoji }}</span>
+            <span>{{ reaction.count }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      v-if="props.typingUser"
+      class="absolute bottom-[52px] left-5 right-5 text-xs text-accent italic px-2.5 opacity-80 pointer-events-none"
+      :style="{ animation: 'typing-pulse 1s ease-in-out infinite' }"
+    >
+      {{ props.typingUser }} is writing something sweet...
+    </div>
+
+    <!-- Emoji picker portal — rendered outside scroll container -->
+    <Teleport to="body">
+      <template v-if="emojiTarget">
+        <!-- Backdrop -->
+        <div
+          class="fixed inset-0 z-[9998]"
+          @click="
+            () => {
+              emojiTarget = null
+              hoveredMsgId = null
+            }
+          "
+        />
+        <!-- Picker -->
+        <div
+          class="fixed z-[9999]"
+          :style="{
+            top: `${Math.min(emojiTarget.top, win.innerHeight - 330)}px`,
+            left: `${Math.max(8, Math.min(emojiTarget.left, win.innerWidth - 290))}px`,
+          }"
+        >
+          <EmojiPicker :on-select="handleEmojiSelect" />
+        </div>
+      </template>
+    </Teleport>
+
+    <!-- Reply preview bar -->
+    <div
+      v-if="props.replyingTo"
+      class="flex items-center gap-2 px-3 py-1.5 mb-1.5 bg-hover rounded-lg text-[12px] text-muted border-l-2 border-accent"
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        class="shrink-0 text-accent"
+      >
+        <polyline points="9 17 4 12 9 7" />
+        <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+      </svg>
+      <span class="flex-1 truncate">
+        <span class="font-semibold text-text">{{ props.replyingTo.name }}</span>
+        <span class="ml-1 opacity-70">{{ props.replyingTo.text }}</span>
+      </span>
+      <button
+        @click="props.onCancelReply()"
+        class="w-5 h-5 flex items-center justify-center rounded-full hover:bg-border text-muted hover:text-text cursor-pointer border-none bg-transparent text-xs shrink-0"
+      >
+        {{ "✕" }}
+      </button>
+    </div>
+
+    <div class="flex gap-1.5 items-end">
+      <textarea
+        ref="inputEl"
+        :rows="1"
+        placeholder="Write something sweet..."
+        :maxlength="2000"
+        class="flex-1 px-3 py-2 bg-input border border-border rounded-2xl text-text text-[13px] outline-none transition-colors focus:border-accent focus:shadow-[0_0_0_3px_var(--color-accent-glow)] resize-none"
+        :style="{ 'max-height': '120px' }"
+        @keydown="
+          (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault()
+              handleSend()
+            }
+            if (e.key === 'Escape' && props.replyingTo) props.onCancelReply()
+          }
+        "
+        @input="
+          (e) => {
+            props.onTyping()
+            autoResizeTextarea(e.currentTarget as HTMLTextAreaElement)
+          }
+        "
+      />
+      <button
+        @click="handleSend"
+        class="rounded-full min-w-9 w-9 h-9 p-0 flex items-center justify-center shrink-0 bg-accent text-white border-none cursor-pointer transition-all hover:bg-accent-dark"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 2L11 13" />
+          <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</template>

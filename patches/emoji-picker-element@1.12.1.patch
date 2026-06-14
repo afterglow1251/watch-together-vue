@@ -1,0 +1,24 @@
+diff --git a/picker.js b/picker.js
+index 9e2e2c9..37e7c6d 100644
+--- a/picker.js
++++ b/picker.js
+@@ -383,8 +383,7 @@ const allGroups = [
+   [5, '🏠️', 'travel-places'],
+   [6, '⚽', 'activities'],
+   [7, '📝', 'objects'],
+-  [8, '⛔️', 'symbols'],
+-  [9, '🏁', 'flags']
++  [8, '⛔️', 'symbols']
+ ].map(([id, emoji, name]) => ({ id, emoji, name }));
+
+ const groups = allGroups.slice(1);
+@@ -1833,7 +1832,8 @@ function instance($$self, $$props, $$invalidate) {
+ 		const emojiSupportLevel = await emojiSupportLevelPromise;
+
+ 		// !version corresponds to custom emoji
+-		return emojis.filter(({ version }) => !version || version <= emojiSupportLevel);
++		// group 9 is flags, which we hide everywhere (nav + search)
++		return emojis.filter(({ version, group }) => (!version || version <= emojiSupportLevel) && group !== 9);
+ 	}
+
+ 	async function summarizeEmojis(emojis) {
