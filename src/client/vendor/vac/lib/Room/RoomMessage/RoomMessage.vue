@@ -406,11 +406,7 @@ export default {
 			this.$emit('open-user-tag', { user })
 		},
 		messageActionHandler(action) {
-			this.resetMessageHover()
-
-			setTimeout(() => {
-				this.$emit('message-action-handler', { action, message: this.message })
-			}, 300)
+			this.$emit('message-action-handler', { action, message: this.message })
 		},
 		sendMessageReaction({ emoji, reaction }) {
 			this.$emit('send-message-reaction', {

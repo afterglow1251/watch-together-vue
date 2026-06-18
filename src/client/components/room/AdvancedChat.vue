@@ -354,22 +354,97 @@ function onTyping() {
   padding-top: 0 !important;
 }
 
-/* Message action menu (Reply / Edit). The gray background lives on
-   .vac-menu-list (var(--chat-dropdown-bg-color)), not .vac-menu-options. */
-.vac-menu-options {
-  border: 1px solid rgba(232, 67, 147, 0.18) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 8px !important;
+/* Message actions: Reply + Edit are shown as inline icon buttons directly on
+   hover (Discord-style bar floating on the message's top edge) instead of being
+   tucked behind a dropdown menu — so you can reply/edit in a single click. The
+   reaction emoji button sits in the same little bar. */
+.wt-chat .vac-options-container.vac-options-inline {
+  width: auto !important;
+  height: auto !important;
+  top: -13px !important;
+  right: 8px !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
 }
-.vac-menu-list {
-  background: #241028 !important;
-  padding: 0 !important;
+/* The transition-group <span> is ALWAYS in the DOM (empty when not hovering).
+   Only give it the little pill chrome when it actually holds buttons — otherwise
+   an empty styled box shows on every message. */
+.wt-chat .vac-options-inline > span:has(> div) {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  background: #241028;
+  border: 1px solid rgba(232, 67, 147, 0.18);
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
-.vac-menu-item {
-  color: #f0c0d8 !important;
+.wt-chat .vac-options-inline .vac-blur-container {
+  display: none !important;
 }
-.vac-menu-list :hover {
-  background: rgba(232, 67, 147, 0.15) !important;
+/* No slide/scale animation when the bar (and footer reply preview) appear — it
+   should just be there instantly, like the simpler client. */
+.wt-chat .vac-slide-left-enter-active,
+.wt-chat .vac-slide-left-leave-active,
+.wt-chat .vac-slide-right-enter-active,
+.wt-chat .vac-slide-right-leave-active,
+.wt-chat .vac-reply-container.vac-slide-up-enter-active,
+.wt-chat .vac-reply-container.vac-slide-up-leave-active {
+  transition: none !important;
+  animation: none !important;
+}
+.wt-chat .vac-slide-left-enter-from,
+.wt-chat .vac-slide-left-leave-to,
+.wt-chat .vac-slide-right-enter-from,
+.wt-chat .vac-slide-right-leave-to,
+.wt-chat .vac-reply-container.vac-slide-up-enter-from,
+.wt-chat .vac-reply-container.vac-slide-up-leave-to {
+  transform: none !important;
+  opacity: 1 !important;
+}
+.wt-chat .vac-message-actions-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+/* Each action button + the emoji button: same small, square, subtle icon. */
+.wt-chat .vac-options-inline .vac-message-action-item,
+.wt-chat .vac-options-inline .vac-message-emojis .vac-svg-button {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  width: 26px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  color: #a07088;
+  background: transparent;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.wt-chat .vac-options-inline .vac-message-action-item:hover,
+.wt-chat .vac-options-inline .vac-message-emojis .vac-svg-button:hover {
+  background: rgba(232, 67, 147, 0.15);
+  color: #e84393;
+  transform: none !important;
+  opacity: 1 !important;
+}
+.wt-chat .vac-options-inline .vac-message-emojis {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+}
+.wt-chat .vac-options-inline .vac-message-action-item svg {
+  width: 15px !important;
+  height: 15px !important;
+  fill: currentColor;
+}
+.wt-chat .vac-options-inline .vac-message-emojis .vac-svg-button svg {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 /* Theme the nested emoji-picker-element via inherited custom properties.

@@ -436,8 +436,10 @@ const sidebarHearts = [
           :episodes="episodes()"
           :current-episode="room.state.currentEpisode"
           :is-host="room.state.isHost"
+          :watched-ids="watchedIds()"
           :on-select="handleEpisodeSelect"
           :on-open-list="() => (episodesOpen = true)"
+          :on-toggle-watched="handleToggleWatched"
         />
 
         <AdvancedChat />

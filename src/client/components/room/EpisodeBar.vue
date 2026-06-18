@@ -7,8 +7,10 @@ const props = defineProps<{
   episodes: Episode[]
   currentEpisode?: Episode | null
   isHost: boolean
+  watchedIds: Set<string>
   onSelect: (ep: Episode) => void
   onOpenList: () => void
+  onToggleWatched: (epId: string) => void
 }>()
 
 const currentIndex = computed(() =>
@@ -19,6 +21,10 @@ const hasNext = computed(
   () => props.isHost && currentIndex.value >= 0 && currentIndex.value < props.episodes.length - 1,
 )
 const multi = computed(() => props.episodes.length > 1)
+// Single-episode shows (movies) have no episode navigator, so expose the
+// watched toggle inline here — otherwise it's unreachable (it normally lives
+// in the episode list overlay, which only opens for multi-episode shows).
+const soloEp = computed(() => (props.episodes.length === 1 ? props.episodes[0] : null))
 
 // Collapse the episode navigator to reclaim sidebar space; remembered across
 // loads so it stays hidden once the user tucks it away.
@@ -68,6 +74,31 @@ function go(delta: number) {
           :style="{ transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s' }"
         >
           <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <!-- Single-episode (movie): inline watched toggle -->
+      <button
+        v-else-if="soloEp"
+        @click="props.onToggleWatched(soloEp.id)"
+        :title="props.watchedIds.has(soloEp.id) ? 'Mark as unwatched' : 'Mark as watched'"
+        :class="`shrink-0 w-7 h-7 flex items-center justify-center rounded-md cursor-pointer transition-all hover:scale-110 ${
+          props.watchedIds.has(soloEp.id) ? 'text-success' : 'text-muted hover:text-accent hover:bg-hover'
+        }`"
+      >
+        <svg
+          v-if="props.watchedIds.has(soloEp.id)"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+          width="16"
+          height="16"
+        >
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="12" cy="12" r="10" />
         </svg>
       </button>
     </div>

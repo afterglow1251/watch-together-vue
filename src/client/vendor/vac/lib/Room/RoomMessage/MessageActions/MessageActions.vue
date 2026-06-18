@@ -1,11 +1,9 @@
 <template>
 	<div class="vac-message-actions-wrapper">
 		<div
-			class="vac-options-container"
+			class="vac-options-container vac-options-inline"
 			:style="{
-				display: hoverAudioProgress ? 'none' : 'initial',
-				width:
-					filteredMessageActions.length && showReactionEmojis ? '70px' : '45px'
+				display: hoverAudioProgress ? 'none' : 'initial'
 			}"
 		>
 			<transition-group name="vac-slide-left" tag="span">
@@ -20,14 +18,20 @@
 
 				<div
 					v-if="isMessageActions"
-					ref="actionIcon"
 					key="2"
-					class="vac-svg-button vac-message-options"
-					@click="openOptions"
+					class="vac-message-actions-inline"
 				>
-					<slot :name="'dropdown-icon_' + message._id">
-						<svg-icon name="dropdown" param="message" />
-					</slot>
+					<div
+						v-for="action in filteredMessageActions"
+						:key="action.name"
+						class="vac-svg-button vac-message-action-item"
+						:title="action.title"
+						@click="messageActionHandler(action)"
+					>
+						<slot :name="'action-icon_' + action.name">
+							<svg-icon :name="actionIcon(action.name)" param="message" />
+						</slot>
+					</div>
 				</div>
 
 				<div v-if="isMessageReactions" key="3" v-click-outside="closeEmoji">
@@ -55,34 +59,6 @@
 				</div>
 			</transition-group>
 		</div>
-
-		<transition
-			v-if="filteredMessageActions.length"
-			:name="
-				message.senderId === currentUserId
-					? 'vac-slide-left'
-					: 'vac-slide-right'
-			"
-		>
-			<div
-				v-if="optionsOpened"
-				ref="menuOptions"
-				v-click-outside="closeOptions"
-				class="vac-menu-options"
-				:class="{
-					'vac-menu-left': message.senderId !== currentUserId
-				}"
-				:style="{ top: `${menuOptionsTop}px` }"
-			>
-				<div class="vac-menu-list">
-					<div v-for="action in filteredMessageActions" :key="action.name">
-						<div class="vac-menu-item" @click="messageActionHandler(action)">
-							{{ action.title }}
-						</div>
-					</div>
-				</div>
-			</div>
-		</transition>
 	</div>
 </template>
 
@@ -214,8 +190,13 @@ export default {
 				this.$emit('update-message-hover', false)
 			}
 		},
+		actionIcon(name) {
+			if (/reply/i.test(name)) return 'reply'
+			if (/edit/i.test(name)) return 'pencil'
+			if (/delete/i.test(name)) return 'deleted'
+			return 'menu'
+		},
 		messageActionHandler(action) {
-			this.closeOptions()
 			this.$emit('message-action-handler', action)
 		},
 		sendMessageReaction(emoji, reaction) {
