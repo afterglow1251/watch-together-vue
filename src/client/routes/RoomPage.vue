@@ -8,6 +8,7 @@ import { useWatchedEpisodes, useToggleWatched } from "../queries/watched"
 import { useSavePlaybackPosition } from "../queries/playback"
 import { api } from "../services/api"
 import toast from "../lib/toast"
+import { useThemeStrings } from "../lib/themeStrings"
 import RoomHeader from "../components/room/RoomHeader.vue"
 import UrlInput from "../components/room/UrlInput.vue"
 import EpisodeBar from "../components/room/EpisodeBar.vue"
@@ -350,6 +351,8 @@ async function handleEpisodeSelectFromList(ep: Episode) {
   episodesOpen.value = false
 }
 
+const s = useThemeStrings()
+
 // Sidebar hearts
 const sidebarHearts = [
   { left: "10%", dur: 14, delay: 0 },
@@ -404,8 +407,8 @@ const sidebarHearts = [
         </svg>
       </button>
 
-      <!-- Sidebar floating hearts -->
-      <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <!-- Sidebar floating hearts (pink theme only) -->
+      <div v-if="s.showHearts" class="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <span
           v-for="(h, i) in sidebarHearts"
           :key="i"
@@ -454,7 +457,7 @@ const sidebarHearts = [
             style="animation: ep-slide-up 0.22s ease-out"
           >
             <div class="flex items-center justify-between px-5 py-3 border-b border-border shrink-0">
-              <span class="text-xs font-semibold text-muted uppercase tracking-wide">Episodes {{ "♥" }}</span>
+              <span class="text-xs font-semibold text-muted uppercase tracking-wide">Episodes<template v-if="s.showHearts"> {{ "♥" }}</template></span>
               <button
                 @click="episodesOpen = false"
                 class="w-6 h-6 flex items-center justify-center rounded-full hover:bg-hover text-muted hover:text-text cursor-pointer border-none bg-transparent text-sm"
@@ -515,11 +518,13 @@ const sidebarHearts = [
           v-if="!room.state.streamUrl"
           class="absolute inset-0 z-30 flex items-center justify-center pointer-events-none"
           :style="{
-            background: 'radial-gradient(ellipse at 50% 50%, rgba(232, 67, 147, 0.06) 0%, rgba(0, 0, 0, 0.8) 70%)',
+            background: s.showHearts
+              ? 'radial-gradient(ellipse at 50% 50%, rgba(232, 67, 147, 0.06) 0%, rgba(0, 0, 0, 0.8) 70%)'
+              : 'rgba(0, 0, 0, 0.8)',
           }"
         >
           <div class="text-center">
-            <span class="block text-5xl text-accent mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
+            <span v-if="s.showHearts" class="block text-5xl text-accent mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
               &#9829;
             </span>
             <p class="text-muted text-[15px] tracking-wide">Pick something to watch together</p>

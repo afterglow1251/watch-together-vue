@@ -11,11 +11,40 @@
   --color-border: #2a2a3a;
   --color-text: #e4e4ed;
   --color-muted: #8888a0;
+  --color-accent: #6b7280;
+  --color-accent-dark: #4b5563;
+  --color-accent-glow: rgba(107, 114, 128, 0.1);
+  --color-success: #34d399;
+  --color-danger: #f87171;
+}
+
+/* Black theme (default) — chat-specific vars */
+:root {
+  --chat-accent-border: rgba(107, 114, 128, 0.18);
+  --chat-accent-border-medium: rgba(107, 114, 128, 0.3);
+  --chat-accent-border-strong: rgba(107, 114, 128, 0.45);
+  --chat-accent-glow-hover: rgba(107, 114, 128, 0.15);
+  --chat-accent-scrollbar: rgba(107, 114, 128, 0.4);
+  --chat-accent-scrollbar-hover: rgba(107, 114, 128, 0.6);
+  --chat-msg-actions-bg: #1a1a24;
+  --chat-muted-text: #888896;
+  --chat-scroll-bg: #1a1a24;
+}
+
+/* Pink theme overrides */
+[data-theme="pink"] {
   --color-accent: #e84393;
   --color-accent-dark: #d63384;
   --color-accent-glow: rgba(232, 67, 147, 0.15);
-  --color-success: #34d399;
-  --color-danger: #f87171;
+  --chat-accent-border: rgba(232, 67, 147, 0.18);
+  --chat-accent-border-medium: rgba(232, 67, 147, 0.3);
+  --chat-accent-border-strong: rgba(232, 67, 147, 0.45);
+  --chat-accent-glow-hover: rgba(232, 67, 147, 0.15);
+  --chat-accent-scrollbar: rgba(232, 67, 147, 0.4);
+  --chat-accent-scrollbar-hover: rgba(232, 67, 147, 0.6);
+  --chat-msg-actions-bg: #241028;
+  --chat-muted-text: #a07088;
+  --chat-scroll-bg: #1d1526;
 }
 
 body {
@@ -68,29 +97,54 @@ body {
   display: none !important;
 }
 
-/* Gradient backgrounds */
+/* Gradient backgrounds — black theme: flat */
 .bg-auth-gradient {
+  background: var(--color-base);
+}
+[data-theme="pink"] .bg-auth-gradient {
   background: radial-gradient(ellipse at 50% 0%, rgba(232, 67, 147, 0.08) 0%, transparent 60%), var(--color-base);
 }
+
 .bg-sidebar-gradient {
+  background: var(--color-sidebar);
+}
+[data-theme="pink"] .bg-sidebar-gradient {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(232, 67, 147, 0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 50% 100%, rgba(232, 67, 147, 0.04) 0%, transparent 50%), var(--color-sidebar);
 }
+
 .sidebar-divider {
+  border-bottom: 1px solid var(--color-border);
+}
+[data-theme="pink"] .sidebar-divider {
   border-bottom: 1px solid transparent;
   border-image: linear-gradient(90deg, var(--color-border) 0%, rgba(232, 67, 147, 0.2) 50%, var(--color-border) 100%) 1;
 }
 
-/* Title gradient */
+/* Title gradient — black theme: white → light gray */
 .text-gradient {
+  background: linear-gradient(135deg, #fff, #b0b0c0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="pink"] .text-gradient {
   background: linear-gradient(135deg, #fff, var(--color-accent));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .text-gradient-subtle {
+  background: linear-gradient(135deg, var(--color-text), var(--color-muted));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="pink"] .text-gradient-subtle {
   background: linear-gradient(135deg, var(--color-text), var(--color-accent));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -104,6 +158,9 @@ body {
 
 /* Library card status badges */
 .status-watching {
+  background: rgba(107, 114, 128, 0.85);
+}
+[data-theme="pink"] .status-watching {
   background: rgba(232, 67, 147, 0.85);
 }
 .status-plan_to_watch {

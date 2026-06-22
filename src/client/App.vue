@@ -4,11 +4,13 @@ import { Toaster } from "vue-sonner"
 import { useAuthStore } from "./stores/auth"
 import { useRoomStore } from "./stores/room"
 import { useFriendsWS } from "./composables/useFriendsWS"
+import { useThemeStrings } from "./lib/themeStrings"
 import ConfirmDialog from "./components/ConfirmDialog.vue"
 import CheckmarkIcon from "./components/ui/CheckmarkIcon.vue"
 import ErrorIcon from "./components/ui/ErrorIcon.vue"
 
 const auth = useAuthStore()
+const s = useThemeStrings()
 
 // Friend-related WS cache invalidation, active for the whole app lifetime.
 useFriendsWS()
@@ -26,13 +28,7 @@ watchEffect(() => {
   <Toaster
     position="top-right"
     :toast-options="{
-      style: {
-        background: 'linear-gradient(135deg, #1a1020, #2a1028)',
-        color: '#f0c0d8',
-        border: '1px solid rgba(232, 67, 147, 0.3)',
-        borderRadius: '12px',
-        fontSize: '13px',
-      },
+      style: s.toastStyle,
       duration: 4000,
     }"
   >

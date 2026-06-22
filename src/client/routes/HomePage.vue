@@ -2,8 +2,10 @@
 import { useRouter } from "vue-router"
 import { useAuthStore } from "../stores/auth"
 import { useRoomStore } from "../stores/room"
+import { useThemeStrings } from "../lib/themeStrings"
 
 const auth = useAuthStore()
+const s = useThemeStrings()
 const room = useRoomStore()
 const router = useRouter()
 
@@ -31,13 +33,13 @@ function handleCreate() {
       >
         <!-- Ambient glow -->
         <div
-          class="absolute inset-4 rounded-full blur-[80px] bg-accent opacity-15 animate-[heart-pulse_4s_ease-in-out_infinite]"
+          :class="['absolute inset-4 rounded-full blur-[80px] bg-accent opacity-15', s.showHearts ? 'animate-[heart-pulse_4s_ease-in-out_infinite]' : '']"
         />
 
         <svg width="208" height="208" viewBox="0 0 208 208" fill="none" class="absolute inset-0">
           <!-- Outer orbit — slow -->
           <circle cx="104" cy="104" r="100" stroke="var(--color-border)" stroke-width="0.5" opacity="0.3" />
-          <g class="animate-[spin_25s_linear_infinite]" :style="{ 'transform-origin': '104px 104px' }">
+          <g v-if="s.showHearts" :class="s.showHearts ? 'animate-[spin_25s_linear_infinite]' : ''" :style="{ 'transform-origin': '104px 104px' }">
             <circle cx="104" cy="4" r="3" fill="var(--color-accent)" opacity="0.6" />
             <circle cx="104" cy="204" r="2" fill="var(--color-accent)" opacity="0.3" />
           </g>
@@ -52,8 +54,7 @@ function handleCreate() {
             stroke-dasharray="4 8"
             opacity="0.2"
           />
-          <g class="animate-[spin_15s_linear_infinite_reverse]" :style="{ 'transform-origin': '104px 104px' }">
-            <!-- Heart on orbit -->
+          <g v-if="s.showHearts" class="animate-[spin_15s_linear_infinite_reverse]" :style="{ 'transform-origin': '104px 104px' }">
             <path
               d="M104 29c-1.5-2.5-4.5-3-6-1s-1 4.5 1 6.5l5 4.5 5-4.5c2-2 2.5-4.5 1-6.5s-4.5-1.5-6 1z"
               fill="var(--color-accent)"
@@ -71,7 +72,7 @@ function handleCreate() {
             stroke-dasharray="2 6"
             opacity="0.25"
           />
-          <g class="animate-[spin_10s_linear_infinite]" :style="{ 'transform-origin': '104px 104px' }">
+          <g v-if="s.showHearts" class="animate-[spin_10s_linear_infinite]" :style="{ 'transform-origin': '104px 104px' }">
             <circle cx="154" cy="104" r="2" fill="var(--color-accent)" opacity="0.5" />
           </g>
 
@@ -79,7 +80,7 @@ function handleCreate() {
           <defs>
             <linearGradient id="play-grad" x1="82" y1="76" x2="136" y2="132">
               <stop offset="0%" stop-color="var(--color-accent)" />
-              <stop offset="100%" stop-color="#ff6b9d" />
+              <stop offset="100%" :stop-color="s.showHearts ? '#ff6b9d' : 'var(--color-accent-dark)'" />
             </linearGradient>
             <filter id="play-glow">
               <feGaussianBlur stdDeviation="6" />

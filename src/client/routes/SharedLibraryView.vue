@@ -12,6 +12,9 @@ import {
 } from "../queries/library"
 import { useSearch, useBrowse } from "../queries/search"
 import toast from "../lib/toast"
+import { useThemeStrings } from "../lib/themeStrings"
+
+const s = useThemeStrings()
 import SearchCard from "../components/search/SearchCard.vue"
 import Pagination from "../components/search/Pagination.vue"
 import type { Friend, SharedLibraryItem, LibraryStatus, SearchResultItem } from "../../shared/types"
@@ -209,7 +212,7 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
       <button
         @click="props.onRemove(props.friend.friendshipId, props.friend.username)"
         class="w-8 h-8 rounded-full border border-danger/30 bg-transparent text-danger cursor-pointer flex items-center justify-center hover:bg-danger/10 transition-colors"
-        title="Remove loved one"
+        :title="s.removeFriendTitle"
       >
         <Trash2 :size="14" />
       </button>
@@ -308,7 +311,7 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
         </div>
       </div>
       <div v-else-if="!sharedLib.isLoading.value" class="text-center py-10 text-muted">
-        <div class="text-4xl text-accent opacity-30 mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
+        <div v-if="s.showHearts" class="text-4xl text-accent opacity-30 mb-3" :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }">
           &#9829;
         </div>
         <p class="text-sm">
@@ -352,6 +355,7 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
       <template v-else>
         <div v-if="isResultsLoading" class="text-center py-10 text-muted">
           <div
+            v-if="s.showHearts"
             class="text-4xl text-accent opacity-30 mb-3"
             :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
           >
@@ -361,6 +365,7 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
         </div>
         <div v-else class="text-center py-10 text-muted">
           <div
+            v-if="s.showHearts"
             class="text-4xl text-accent opacity-30 mb-3"
             :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
           >

@@ -5,6 +5,9 @@ import { computed, onMounted, ref } from "vue"
 import ChatWindow from "../../vendor/vac/lib/ChatWindow.vue"
 import { useRoomStore } from "../../stores/room"
 import type { ChatMsg } from "../../stores/room"
+import { useThemeStore } from "../../stores/theme"
+
+const themeStore = useThemeStore()
 
 const room = useRoomStore()
 
@@ -85,30 +88,56 @@ const messageActions = [
   { name: "editMessage", title: "Edit", onlyMe: true },
 ]
 
-// Match the app's dark / pink theme (vue-advanced-chat turns this into CSS vars).
-const styles = {
-  general: {
-    color: "#f0c0d8",
-    backgroundInput: "#2a1430",
-    colorPlaceholder: "#a07088",
-    backgroundScrollIcon: "#e84393",
-  },
-  icons: { dropdownScroll: "#fff" },
-  container: { borderRadius: "0" },
-  header: { background: "transparent", colorRoomName: "#f0c0d8" },
-  content: { background: "transparent" },
-  footer: { background: "transparent", backgroundReply: "rgba(232,67,147,0.12)" },
-  message: {
-    background: "#2a1430",
-    backgroundMe: "#e84393",
-    color: "#f0c0d8",
-    colorStarted: "#a07088",
-    backgroundReaction: "#241028",
-    backgroundReactionMe: "rgba(232,67,147,0.25)",
-    borderStyleReactionMe: "1px solid #e84393",
-    colorReactionCounter: "#f0c0d8",
-  },
-}
+// Match the app theme (vue-advanced-chat turns this into CSS vars).
+const styles = computed(() =>
+  themeStore.theme === "pink"
+    ? {
+        general: {
+          color: "#f0c0d8",
+          backgroundInput: "#2a1430",
+          colorPlaceholder: "#a07088",
+          backgroundScrollIcon: "#e84393",
+        },
+        icons: { dropdownScroll: "#fff" },
+        container: { borderRadius: "0" },
+        header: { background: "transparent", colorRoomName: "#f0c0d8" },
+        content: { background: "transparent" },
+        footer: { background: "transparent", backgroundReply: "rgba(232,67,147,0.12)" },
+        message: {
+          background: "#2a1430",
+          backgroundMe: "#e84393",
+          color: "#f0c0d8",
+          colorStarted: "#a07088",
+          backgroundReaction: "#241028",
+          backgroundReactionMe: "rgba(232,67,147,0.25)",
+          borderStyleReactionMe: "1px solid #e84393",
+          colorReactionCounter: "#f0c0d8",
+        },
+      }
+    : {
+        general: {
+          color: "#e4e4ed",
+          backgroundInput: "#1a1a24",
+          colorPlaceholder: "#8888a0",
+          backgroundScrollIcon: "#6b7280",
+        },
+        icons: { dropdownScroll: "#fff" },
+        container: { borderRadius: "0" },
+        header: { background: "transparent", colorRoomName: "#e4e4ed" },
+        content: { background: "transparent" },
+        footer: { background: "transparent", backgroundReply: "rgba(107,114,128,0.12)" },
+        message: {
+          background: "#1a1a24",
+          backgroundMe: "#374151",
+          color: "#e4e4ed",
+          colorStarted: "#8888a0",
+          backgroundReaction: "#111118",
+          backgroundReactionMe: "rgba(107,114,128,0.25)",
+          borderStyleReactionMe: "1px solid #6b7280",
+          colorReactionCounter: "#e4e4ed",
+        },
+      },
+)
 
 type SendPayload = { content: string; replyMessage?: { _id: number | string } }
 function onSendMessage(payload: SendPayload) {
@@ -299,11 +328,10 @@ function onTyping() {
   opacity: 1;
 }
 
-/* Scroll-to-bottom button — dark elevated circle with a pink chevron so it
-   stands out against both the pink bubbles and the dark background. */
+/* Scroll-to-bottom button */
 .wt-chat .vac-icon-scroll {
-  background: #1d1526 !important;
-  border: 1px solid rgba(232, 67, 147, 0.45) !important;
+  background: var(--chat-scroll-bg) !important;
+  border: 1px solid var(--chat-accent-border-strong) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55) !important;
 }
 .wt-chat .vac-icon-scroll svg {
@@ -330,14 +358,14 @@ function onTyping() {
 .wt-chat .vac-text-started {
   background: transparent !important;
   box-shadow: none !important;
-  color: #a07088 !important;
+  color: var(--chat-muted-text) !important;
   font-size: 11px !important;
   font-weight: 600 !important;
   letter-spacing: 0.05em !important;
   text-transform: uppercase;
 }
 .wt-chat .vac-text-date {
-  color: #a07088 !important;
+  color: var(--chat-muted-text) !important;
 }
 
 /* The reaction picker is positioned in JS, anchored above the clicked message
@@ -347,10 +375,10 @@ function onTyping() {
   z-index: 99999 !important;
 }
 
-/* Emoji popup container: drop the gray shadow, subtle pink border, no padding */
+/* Emoji popup container */
 .wt-chat .vac-emoji-picker {
   box-shadow: none !important;
-  border: 1px solid rgba(232, 67, 147, 0.18) !important;
+  border: 1px solid var(--chat-accent-border) !important;
   padding-top: 0 !important;
 }
 
@@ -374,8 +402,8 @@ function onTyping() {
   align-items: center;
   gap: 1px;
   padding: 2px;
-  background: #241028;
-  border: 1px solid rgba(232, 67, 147, 0.18);
+  background: var(--chat-msg-actions-bg);
+  border: 1px solid var(--chat-accent-border);
   border-radius: 8px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
 }
@@ -419,7 +447,7 @@ function onTyping() {
   align-items: center;
   justify-content: center;
   border-radius: 5px;
-  color: #a07088;
+  color: var(--chat-muted-text);
   background: transparent;
   transition:
     background 0.12s,
@@ -427,8 +455,8 @@ function onTyping() {
 }
 .wt-chat .vac-options-inline .vac-message-action-item:hover,
 .wt-chat .vac-options-inline .vac-message-emojis .vac-svg-button:hover {
-  background: rgba(232, 67, 147, 0.15);
-  color: #e84393;
+  background: var(--chat-accent-glow-hover);
+  color: var(--color-accent);
   transform: none !important;
   opacity: 1 !important;
 }
@@ -451,22 +479,22 @@ function onTyping() {
    !important is required: vue-advanced-chat's own SCSS sets these vars with a
    higher-specificity selector (.vac-emoji-wrapper .vac-emoji-picker emoji-picker). */
 .wt-chat emoji-picker {
-  --background: #241028 !important;
-  --border-color: rgba(232, 67, 147, 0.18) !important;
-  --indicator-color: #e84393 !important;
-  --input-border-color: rgba(232, 67, 147, 0.3) !important;
-  --input-font-color: #f0c0d8 !important;
-  --input-placeholder-color: #a07088 !important;
-  --outline-color: #e84393 !important;
-  --category-font-color: #a07088 !important;
-  --button-active-background: rgba(232, 67, 147, 0.3) !important;
-  --button-hover-background: rgba(232, 67, 147, 0.15) !important;
+  --background: var(--chat-msg-actions-bg) !important;
+  --border-color: var(--chat-accent-border) !important;
+  --indicator-color: var(--color-accent) !important;
+  --input-border-color: var(--chat-accent-border-medium) !important;
+  --input-font-color: var(--color-text) !important;
+  --input-placeholder-color: var(--chat-muted-text) !important;
+  --outline-color: var(--color-accent) !important;
+  --category-font-color: var(--chat-muted-text) !important;
+  --button-active-background: var(--chat-accent-border-medium) !important;
+  --button-hover-background: var(--chat-accent-glow-hover) !important;
 }
 
 /* Minimalist themed scrollbar */
 .wt-chat .vac-container-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(232, 67, 147, 0.4) transparent;
+  scrollbar-color: var(--chat-accent-scrollbar) transparent;
 }
 .wt-chat .vac-container-scroll::-webkit-scrollbar {
   width: 6px;
@@ -475,10 +503,10 @@ function onTyping() {
   background: transparent;
 }
 .wt-chat .vac-container-scroll::-webkit-scrollbar-thumb {
-  background: rgba(232, 67, 147, 0.35);
+  background: var(--chat-accent-scrollbar);
   border-radius: 3px;
 }
 .wt-chat .vac-container-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(232, 67, 147, 0.6);
+  background: var(--chat-accent-scrollbar-hover);
 }
 </style>

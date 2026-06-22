@@ -2,6 +2,10 @@
 import { ref, onMounted, onUnmounted } from "vue"
 import { Link2 } from "lucide-vue-next"
 import toast from "../../lib/toast"
+import { useThemeStrings } from "../../lib/themeStrings"
+import ThemeToggle from "../ui/ThemeToggle.vue"
+
+const s = useThemeStrings()
 
 const props = defineProps<{
   code: string
@@ -37,9 +41,7 @@ function shareLink() {
   <div class="px-4 py-3 border-b border-border relative z-20">
     <div class="flex items-center justify-between mb-2">
       <a href="/" class="text-sm font-bold text-gradient hover:opacity-80 transition-opacity select-none">
-        Watch&nbsp;
-        <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">♥</span>
-        &nbsp;Together
+        Watch<template v-if="s.showHearts">&nbsp;<span :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">♥</span>&nbsp;</template><template v-else> </template>Together
       </a>
     </div>
     <div class="flex items-center gap-2">
@@ -56,11 +58,12 @@ function shareLink() {
       <span
         v-if="props.isHost"
         class="bg-accent text-white text-[9px] font-bold px-1.5 py-0.5 rounded tracking-wider shadow-[0_0_8px_var(--color-accent-glow)]"
-        :style="{ animation: 'badge-pulse 2s ease-in-out infinite' }"
+        :style="s.showHearts ? { animation: 'badge-pulse 2s ease-in-out infinite' } : {}"
       >
         HOST
       </span>
-      <div class="ml-auto relative">
+      <div class="ml-auto flex items-center gap-1.5 relative">
+        <ThemeToggle />
         <button
           ref="buttonRef"
           @click="showViewers = !showViewers"

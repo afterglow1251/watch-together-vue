@@ -4,6 +4,10 @@ import { useRouter } from "vue-router"
 import { useAuthStore } from "../stores/auth"
 import FloatingHearts from "../components/layout/FloatingHearts.vue"
 import Card from "../components/layout/Card.vue"
+import ThemeToggle from "../components/ui/ThemeToggle.vue"
+import { useThemeStrings } from "../lib/themeStrings"
+
+const s = useThemeStrings()
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -39,13 +43,13 @@ async function handleSubmit(e: Event) {
 
 <template>
   <div class="h-screen flex items-center justify-center relative bg-auth-gradient">
-    <FloatingHearts />
+    <FloatingHearts v-if="s.showHearts" />
+    <div class="absolute top-3 right-3 z-10">
+      <ThemeToggle />
+    </div>
     <Card>
       <h1 class="text-[28px] font-bold mb-1.5 text-gradient">
-        Watch{{ " " }}
-        <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }"> &#9829; </span
-        >{{ " " }}
-        Together
+        Watch<template v-if="s.showHearts">{{ " " }}<span :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">&#9829;</span>{{ " " }}</template><template v-else>{{ " " }}</template>Together
       </h1>
       <p class="text-muted text-sm mb-8">Sign in to your movie night</p>
 

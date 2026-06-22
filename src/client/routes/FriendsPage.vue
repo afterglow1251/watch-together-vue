@@ -16,7 +16,10 @@ import { api } from "../services/api"
 import toast from "../lib/toast"
 import { UserPlus, Check, X, Undo2 } from "lucide-vue-next"
 import { useConfirm } from "../stores/confirm"
+import { useThemeStrings } from "../lib/themeStrings"
 import SharedLibraryView from "./SharedLibraryView.vue"
+
+const s = useThemeStrings()
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -122,8 +125,8 @@ async function handleCancel(friendshipId: number) {
 
 async function handleRemove(friendshipId: number, username: string) {
   const ok = await confirm({
-    title: "Remove loved one",
-    message: `Are you sure you want to remove ${username} from your loved ones?`,
+    title: s.value.removeFriendTitle,
+    message: s.value.removeFriendMessage(username),
     confirmText: "Remove",
     danger: true,
   })
@@ -190,7 +193,7 @@ async function handleRemove(friendshipId: number, username: string) {
           >
             <div>
               <span class="text-sm font-medium text-text">{{ req.senderUsername }}</span>
-              <span class="text-xs text-muted ml-2">wants to be your loved one</span>
+              <span class="text-xs text-muted ml-2">{{ s.friendRequest }}</span>
             </div>
             <div class="flex gap-2">
               <button
@@ -239,7 +242,7 @@ async function handleRemove(friendshipId: number, username: string) {
       <!-- Friends list -->
       <template v-if="(friends.data.value?.length ?? 0) > 0">
         <h3 class="text-xs font-semibold text-muted uppercase tracking-wide mb-3">
-          Loved Ones ({{ friends.data.value!.length }})
+          {{ s.friendsHeading(friends.data.value!.length) }}
         </h3>
         <div class="flex flex-col gap-2">
           <button
@@ -272,12 +275,13 @@ async function handleRemove(friendshipId: number, username: string) {
           class="text-center py-10 text-muted"
         >
           <div
+            v-if="s.showHearts"
             class="text-4xl text-accent opacity-30 mb-3"
             :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
           >
             &#9829;
           </div>
-          <p class="text-sm">No loved ones yet. Search and add someone above!</p>
+          <p class="text-sm">{{ s.noFriendsYet }}</p>
         </div>
       </template>
     </template>

@@ -2,9 +2,12 @@
 import { computed } from "vue"
 import { RouterLink } from "vue-router"
 import { useAuthStore } from "../../stores/auth"
+import { useThemeStrings } from "../../lib/themeStrings"
+import ThemeToggle from "../ui/ThemeToggle.vue"
 import { useFriendRequests } from "../../queries/friends"
 
 const auth = useAuthStore()
+const s = useThemeStrings()
 const userId = () => auth.user?.id
 const friendRequests = useFriendRequests(userId)
 const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
@@ -13,9 +16,7 @@ const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
 <template>
   <nav class="h-[52px] flex items-center px-5 relative z-10 shrink-0">
     <span class="text-sm font-bold text-gradient mr-6 select-none">
-      Watch&nbsp;
-      <span class="text-accent" :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }"> ♥ </span>
-      &nbsp;Together
+      Watch<template v-if="s.showHearts">&nbsp;<span :style="{ '-webkit-text-fill-color': 'var(--color-accent)' }">♥</span>&nbsp;</template><template v-else> </template>Together
     </span>
 
     <div class="flex gap-1">
@@ -32,7 +33,7 @@ const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
         class="px-3 py-1.5 rounded-md text-[13px] font-medium text-muted transition-colors hover:text-text hover:bg-hover inline-flex items-center"
         active-class="!text-accent !bg-accent/10"
       >
-        Loved Ones
+        {{ s.navFriends }}
         <span
           v-if="requestCount > 0"
           class="bg-accent text-white text-[10px] font-bold min-w-[18px] h-[18px] rounded-full inline-flex items-center justify-center ml-1 shadow-[0_0_8px_var(--color-accent-glow)]"
@@ -43,7 +44,8 @@ const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
       </RouterLink>
     </div>
 
-    <div class="ml-auto flex items-center gap-3">
+    <div class="ml-auto flex items-center gap-2">
+      <ThemeToggle />
       <span class="text-[13px] text-muted">{{ auth.user?.username }}</span>
       <button
         @click="auth.logout()"
