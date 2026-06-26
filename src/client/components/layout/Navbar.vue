@@ -29,6 +29,13 @@ const requestCount = computed(() => friendRequests.data.value?.length ?? 0)
         Home
       </RouterLink>
       <RouterLink
+        to="/discover"
+        class="px-3 py-1.5 rounded-md text-[13px] font-medium text-muted transition-colors hover:text-text hover:bg-hover"
+        active-class="!text-accent !bg-accent/10"
+      >
+        Discover
+      </RouterLink>
+      <RouterLink
         to="/loved-ones"
         class="px-3 py-1.5 rounded-md text-[13px] font-medium text-muted transition-colors hover:text-text hover:bg-hover inline-flex items-center"
         active-class="!text-accent !bg-accent/10"

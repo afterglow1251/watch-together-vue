@@ -3,6 +3,7 @@ import { useAuthStore } from "../stores/auth"
 import AuthPage from "../routes/AuthPage.vue"
 import HomePage from "../routes/HomePage.vue"
 import FriendsPage from "../routes/FriendsPage.vue"
+import DiscoverPage from "../routes/DiscoverPage.vue"
 import RoomPage from "../routes/RoomPage.vue"
 import AppLayout from "../components/layout/AppLayout.vue"
 
@@ -14,13 +15,14 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
     children: [
       { path: "", component: HomePage },
+      { path: "discover", component: DiscoverPage },
       { path: "loved-ones", component: FriendsPage },
       { path: "loved-ones/:friendId", component: FriendsPage },
     ],
   },
   { path: "/room/:code", component: RoomPage, meta: { requiresAuth: true } },
   // Legacy redirects
-  { path: "/search", redirect: "/loved-ones" },
+  { path: "/search", redirect: "/discover" },
   { path: "/library", redirect: "/loved-ones" },
   { path: "/friends", redirect: "/loved-ones" },
   { path: "/friends/:friendId", redirect: (to) => `/loved-ones/${to.params.friendId}` },
