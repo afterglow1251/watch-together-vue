@@ -1,16 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from "vue"
-import { useRouter } from "vue-router"
+import { ref } from "vue"
 import { Search } from "lucide-vue-next"
-import { useRoomStore } from "../stores/room"
-import { useAuthStore } from "../stores/auth"
-import { useSearch, useBrowse } from "../queries/search"
-import { useThemeStrings } from "../lib/themeStrings"
-import SearchCard from "../components/search/SearchCard.vue"
-import Pagination from "../components/search/Pagination.vue"
-import type { SearchResultItem } from "../../shared/types"
-
-const s = useThemeStrings()
+import { useMovieSearch } from "../composables/useMovieSearch"
+import MovieResults from "../components/search/MovieResults.vue"
 
 const MAIN_TABS = [
   { key: "search", label: "Search" },
@@ -22,62 +14,24 @@ const MAIN_TABS = [
 
 type MainTabKey = (typeof MAIN_TABS)[number]["key"]
 
-const PAGE_SIZE = 10
-
-const room = useRoomStore()
-const router = useRouter()
-const auth = useAuthStore()
-
 const mainTab = ref<MainTabKey>("search")
 
-const searchQuery = ref("")
-const debouncedQuery = ref("")
-const page = ref(1)
-
-let debounceTimer: ReturnType<typeof setTimeout> | undefined
-
-function onQueryInput(value: string) {
-  searchQuery.value = value
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    debouncedQuery.value = value.trim()
-    page.value = 1
-  }, 300)
-}
-
-onUnmounted(() => clearTimeout(debounceTimer))
-
-const searchResults = useSearch(
-  () => debouncedQuery.value,
-  () => page.value,
-)
-const browseCategory = () => (mainTab.value !== "search" ? mainTab.value : "")
-const browseResults = useBrowse(browseCategory, () => page.value)
-
-const isSearchTab = computed(() => mainTab.value === "search")
-const results = computed(
-  () => (isSearchTab.value ? searchResults.data.value : browseResults.data.value) ?? [],
-)
-const isResultsLoading = computed(() =>
-  isSearchTab.value ? searchResults.isLoading.value : browseResults.isLoading.value,
-)
-const isResultsFetching = computed(() =>
-  isSearchTab.value ? searchResults.isFetching.value : browseResults.isFetching.value,
-)
+const {
+  searchQuery,
+  debouncedQuery,
+  page,
+  isSearchTab,
+  results,
+  isResultsLoading,
+  isResultsFetching,
+  onQueryInput,
+  resetPage,
+  openInRoom,
+} = useMovieSearch(() => mainTab.value)
 
 function handleMainTabChange(key: MainTabKey) {
   mainTab.value = key
-  page.value = 1
-}
-
-function handleCardClick(item: SearchResultItem) {
-  room.createRoom(auth.user!.username)
-  const unwatch = setInterval(() => {
-    if (room.state.roomCode) {
-      clearInterval(unwatch)
-      router.push(`/room/${room.state.roomCode}?load=${encodeURIComponent(item.url)}`)
-    }
-  }, 100)
+  resetPage()
 }
 </script>
 
@@ -112,59 +66,15 @@ function handleCardClick(item: SearchResultItem) {
       </template>
     </div>
 
-    <!-- Loading indicator — fixed height, opacity toggle to avoid layout shift -->
-    <div
-      :class="`h-0.5 rounded overflow-hidden mb-4 transition-opacity duration-200 ${isResultsFetching ? 'opacity-100 bg-accent/20' : 'opacity-0'}`"
-    >
-      <div class="h-full bg-accent rounded animate-[loading_1s_ease-in-out_infinite]" :style="{ width: '30%' }" />
-    </div>
-
-    <template v-if="results.length > 0">
-      <div class="grid gap-4" :style="{ 'grid-template-columns': 'repeat(auto-fill, minmax(160px, 1fr))' }">
-        <SearchCard
-          v-for="item in results"
-          :key="item.url"
-          :item="item"
-          :on-click="() => handleCardClick(item)"
-        />
-      </div>
-
-      <Pagination
-        v-if="page > 1 || results.length >= PAGE_SIZE"
-        :current="page"
-        :has-more="results.length >= PAGE_SIZE"
-        :on-change="(p: number) => (page = p)"
-      />
-    </template>
-    <template v-else>
-      <div v-if="isResultsLoading" class="text-center py-10 text-muted">
-        <div
-          v-if="s.showHearts"
-          class="text-4xl text-accent opacity-30 mb-3"
-          :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
-        >
-          &#9829;
-        </div>
-        <p class="text-sm">Loading...</p>
-      </div>
-      <div v-else class="text-center py-10 text-muted">
-        <div
-          v-if="s.showHearts"
-          class="text-4xl text-accent opacity-30 mb-3"
-          :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
-        >
-          &#9829;
-        </div>
-        <p class="text-sm">
-          {{
-            isSearchTab
-              ? debouncedQuery
-                ? "No results found. Try a different query."
-                : "Type something to search UaKino."
-              : "No results found."
-          }}
-        </p>
-      </div>
-    </template>
+    <MovieResults
+      :results="results"
+      :is-search-tab="isSearchTab"
+      :debounced-query="debouncedQuery"
+      :is-loading="isResultsLoading"
+      :is-fetching="isResultsFetching"
+      :page="page"
+      :on-card-click="openInRoom"
+      :on-page-change="(p: number) => (page = p)"
+    />
   </div>
 </template>

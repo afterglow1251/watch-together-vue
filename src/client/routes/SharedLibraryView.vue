@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from "vue"
+import { ref, computed } from "vue"
 import { useRouter } from "vue-router"
 import { Search, ChevronLeft, Trash2, MoreHorizontal } from "lucide-vue-next"
 import { useRoomStore } from "../stores/room"
@@ -10,13 +10,12 @@ import {
   useRemoveFromSharedLibrary,
   useAddToSharedLibrary,
 } from "../queries/library"
-import { useSearch, useBrowse } from "../queries/search"
+import { useMovieSearch } from "../composables/useMovieSearch"
 import toast from "../lib/toast"
 import { useThemeStrings } from "../lib/themeStrings"
 
 const s = useThemeStrings()
-import SearchCard from "../components/search/SearchCard.vue"
-import Pagination from "../components/search/Pagination.vue"
+import MovieResults from "../components/search/MovieResults.vue"
 import type { Friend, SharedLibraryItem, LibraryStatus, SearchResultItem } from "../../shared/types"
 
 const STATUS_LABELS: Record<string, string> = {
@@ -35,8 +34,6 @@ const MAIN_TABS = [
 ] as const
 
 type MainTabKey = (typeof MAIN_TABS)[number]["key"]
-
-const PAGE_SIZE = 10
 
 const props = defineProps<{
   userId: number
@@ -63,45 +60,19 @@ const mainTab = ref<MainTabKey>("library")
 const filter = ref<string>("all")
 const menuItem = ref<{ item: SharedLibraryItem; x: number; y: number } | null>(null)
 
-// Search/browse state (local signals)
-const searchQuery = ref("")
-const debouncedQuery = ref("")
-const browsePage = ref(1)
-
-let debounceTimer: ReturnType<typeof setTimeout> | undefined
-
-function onQueryInput(value: string) {
-  searchQuery.value = value
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => {
-    debouncedQuery.value = value.trim()
-    browsePage.value = 1
-  }, 300)
-}
-
-onUnmounted(() => clearTimeout(debounceTimer))
-
-// Hooks for search/browse
-const searchResults = useSearch(
-  () => debouncedQuery.value,
-  () => browsePage.value,
-)
-const browseCategory = () => {
-  const t = mainTab.value
-  return t !== "library" && t !== "search" ? t : ""
-}
-const browseResults = useBrowse(browseCategory, () => browsePage.value)
-
-const isSearchTab = computed(() => mainTab.value === "search")
-const browseOrSearchResults = computed(
-  () => (isSearchTab.value ? searchResults.data.value : browseResults.data.value) ?? [],
-)
-const isResultsLoading = computed(() =>
-  isSearchTab.value ? searchResults.isLoading.value : browseResults.isLoading.value,
-)
-const isResultsFetching = computed(() =>
-  isSearchTab.value ? searchResults.isFetching.value : browseResults.isFetching.value,
-)
+// Search/browse experience shared with the standalone Discover page
+const {
+  searchQuery,
+  debouncedQuery,
+  page: browsePage,
+  isSearchTab,
+  results: browseOrSearchResults,
+  isResultsLoading,
+  isResultsFetching,
+  onQueryInput,
+  resetPage,
+  openInRoom,
+} = useMovieSearch(() => mainTab.value)
 
 // Set of URLs already in this shared library
 const libraryUrls = computed(() => {
@@ -125,7 +96,7 @@ function poster(item: SharedLibraryItem | SearchResultItem) {
 
 function handleMainTabChange(key: MainTabKey) {
   mainTab.value = key
-  browsePage.value = 1
+  resetPage()
 }
 
 function handleLibraryCardClick(item: SharedLibraryItem) {
@@ -134,16 +105,6 @@ function handleLibraryCardClick(item: SharedLibraryItem) {
     if (room.state.roomCode) {
       clearInterval(unwatch)
       router.push(`/room/${room.state.roomCode}?load=${encodeURIComponent(item.sourceUrl)}`)
-    }
-  }, 100)
-}
-
-function handleSearchCardClick(item: SearchResultItem) {
-  room.createRoom(auth.user!.username)
-  const unwatch = setInterval(() => {
-    if (room.state.roomCode) {
-      clearInterval(unwatch)
-      router.push(`/room/${room.state.roomCode}?load=${encodeURIComponent(item.url)}`)
     }
   }, 100)
 }
@@ -325,64 +286,19 @@ const MENU_STATUSES: { key: LibraryStatus; label: string }[] = [
     </template>
 
     <!-- Search / Browse tab content -->
-    <template v-if="mainTab !== 'library'">
-      <!-- Loading indicator — fixed height, opacity toggle to avoid layout shift -->
-      <div
-        :class="`h-0.5 rounded overflow-hidden mb-4 transition-opacity duration-200 ${isResultsFetching ? 'opacity-100 bg-accent/20' : 'opacity-0'}`"
-      >
-        <div class="h-full bg-accent rounded animate-[loading_1s_ease-in-out_infinite]" :style="{ width: '30%' }" />
-      </div>
-
-      <template v-if="browseOrSearchResults.length > 0">
-        <div class="grid gap-4" :style="{ 'grid-template-columns': 'repeat(auto-fill, minmax(160px, 1fr))' }">
-          <SearchCard
-            v-for="item in browseOrSearchResults"
-            :key="item.url"
-            :item="item"
-            :on-click="() => handleSearchCardClick(item)"
-            :on-bookmark="(e: MouseEvent) => handleAddToLibrary(e, item)"
-            :in-library="libraryUrls.has(item.url)"
-          />
-        </div>
-
-        <Pagination
-          v-if="browsePage > 1 || browseOrSearchResults.length >= PAGE_SIZE"
-          :current="browsePage"
-          :has-more="browseOrSearchResults.length >= PAGE_SIZE"
-          :on-change="(p: number) => (browsePage = p)"
-        />
-      </template>
-      <template v-else>
-        <div v-if="isResultsLoading" class="text-center py-10 text-muted">
-          <div
-            v-if="s.showHearts"
-            class="text-4xl text-accent opacity-30 mb-3"
-            :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
-          >
-            &#9829;
-          </div>
-          <p class="text-sm">Loading...</p>
-        </div>
-        <div v-else class="text-center py-10 text-muted">
-          <div
-            v-if="s.showHearts"
-            class="text-4xl text-accent opacity-30 mb-3"
-            :style="{ animation: 'heart-pulse 2s ease-in-out infinite' }"
-          >
-            &#9829;
-          </div>
-          <p class="text-sm">
-            {{
-              isSearchTab
-                ? debouncedQuery
-                  ? "No results found. Try a different query."
-                  : "Type something to search UaKino."
-                : "No results found."
-            }}
-          </p>
-        </div>
-      </template>
-    </template>
+    <MovieResults
+      v-if="mainTab !== 'library'"
+      :results="browseOrSearchResults"
+      :is-search-tab="isSearchTab"
+      :debounced-query="debouncedQuery"
+      :is-loading="isResultsLoading"
+      :is-fetching="isResultsFetching"
+      :page="browsePage"
+      :on-card-click="openInRoom"
+      :on-page-change="(p: number) => (browsePage = p)"
+      :library-urls="libraryUrls"
+      :on-bookmark="handleAddToLibrary"
+    />
 
     <!-- Context menu -->
     <div
